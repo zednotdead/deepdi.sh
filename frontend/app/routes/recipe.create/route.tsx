@@ -1,4 +1,4 @@
-import { Form, useActionData, useLoaderData, useNavigate, useSubmit } from '@remix-run/react';
+import { Form, useActionData, useLoaderData, useNavigate, useSubmit, ActionFunctionArgs, MetaFunction } from 'react-router';
 import { clsx } from 'clsx';
 import { IngredientDTO } from 'common/bindings/IngredientDTO';
 import { IngredientUnitDTO } from 'common/bindings/IngredientUnitDTO';
@@ -10,7 +10,6 @@ import { Controller, FieldArrayWithId, useFieldArray, UseFieldArrayProps, useFor
 import { toast } from 'sonner';
 import { assert } from 'typia';
 import { CreateRecipeDTO } from 'common/bindings/CreateRecipeDTO';
-import { ActionFunctionArgs, MetaFunction } from '@remix-run/node';
 import { parse as parseDuration } from 'tinyduration';
 
 import { DurationInput } from './DurationInput';

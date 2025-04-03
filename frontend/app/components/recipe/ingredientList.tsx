@@ -1,4 +1,4 @@
-import { Link } from '@remix-run/react';
+import { Link } from 'react-router';
 import { clsx } from 'clsx';
 import type { IngredientUnitDTO } from 'common/bindings/IngredientUnitDTO';
 import type { IngredientWithAmountDTO } from 'common/bindings/IngredientWithAmountDTO';

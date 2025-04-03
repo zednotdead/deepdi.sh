@@ -4,7 +4,7 @@ import {
 import { WebTracerProvider } from '@opentelemetry/sdk-trace-web';
 import { ZoneContextManager } from '@opentelemetry/context-zone';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
-import { B3Propagator } from '@opentelemetry/propagator-b3';
+import { W3CTraceContextPropagator } from '@opentelemetry/core';
 import { getWebAutoInstrumentations } from '@opentelemetry/auto-instrumentations-web';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto';
 import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
@@ -20,7 +20,7 @@ const provider = new WebTracerProvider({
 });
 
 const traceExporter = new OTLPTraceExporter({
-  url: 'http://localhost:4318/v1/traces',
+  url: '/v1/traces',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -31,7 +31,7 @@ provider.addSpanProcessor(new BatchSpanProcessor(traceExporter));
 provider.register({
   // Changing default contextManager to use ZoneContextManager - supports asynchronous operations - optional
   contextManager: new ZoneContextManager(),
-  propagator: new B3Propagator(),
+  propagator: new W3CTraceContextPropagator(),
 });
 
 // Registering instrumentations

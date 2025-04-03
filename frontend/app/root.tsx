@@ -1,12 +1,5 @@
 /// <reference types="vite-plugin-svgr/client" />
-import {
-  Links,
-  Meta,
-  Outlet,
-  Scripts,
-  ScrollRestoration,
-  useMatches,
-} from '@remix-run/react';
+import { Links, Meta, Outlet, Scripts, ScrollRestoration, useMatches } from 'react-router';
 import '@fontsource-variable/raleway';
 import '@fontsource-variable/playfair-display';
 import { Suspense, type FC, type PropsWithChildren } from 'react';

@@ -12,7 +12,7 @@ async fn main() -> Result<()> {
     // TODO: add more log points
     init_tracing()?;
 
-    let config = Settings::get()?;
+    let config = Settings::get().unwrap();
     let db = PgPool::connect_lazy_with(config.database.with_db());
     let app = AppBuilder::new().with_postgres_database(db).build()?;
     let listener = config.application.get_listener().await?;

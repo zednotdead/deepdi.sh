@@ -1,6 +1,5 @@
-import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
-import { redirect, json } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
+import type { LoaderFunctionArgs, MetaFunction } from 'react-router';
+import { redirect, useLoaderData } from 'react-router';
 import type { IngredientDTO } from 'common/bindings/IngredientDTO';
 import { trace, Span } from '@opentelemetry/api';
 
@@ -35,10 +34,10 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
   if (!ingredient) return redirect('/');
 
-  return json({
+  return {
     id: params.id,
     ingredient,
-  });
+  };
 }
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => [

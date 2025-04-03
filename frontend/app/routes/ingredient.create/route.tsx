@@ -1,6 +1,5 @@
-import type { ActionFunctionArgs, MetaFunction } from '@remix-run/node';
-import { json } from '@remix-run/node';
-import { Form, useActionData, useNavigate, useSubmit } from '@remix-run/react';
+import type { ActionFunctionArgs, MetaFunction } from 'react-router';
+import { Form, useActionData, useNavigate, useSubmit } from 'react-router';
 import { clsx } from 'clsx';
 import { Controller, useForm } from 'react-hook-form';
 import type { CreateIngredientDTO } from 'common/bindings/CreateIngredientDTO';
@@ -43,9 +42,9 @@ export async function action({ request }: ActionFunctionArgs) {
     { method: 'POST', body: JSON.stringify(ingredient), headers: { 'Content-Type': 'application/json' } },
   ).then(res => res.json());
 
-  return json({
+  return {
     ingredient: createdIngredient,
-  });
+  };
 }
 
 interface IngredientCreateForm {
@@ -117,7 +116,7 @@ export default function CreateIngredientRoute() {
             {' '}
             <span className="text-xs font-normal text-text-300">(check means you can&apos;t eat it on that diet)</span>
           </Label>
-          {diets.map(diet => (
+          {diets().map(diet => (
             <CheckboxRow key={diet.id} id={diet.id} value={diet.id} className="mb-2 last:mb-0" {...register('dietViolations')}>
               <span className="mr-2" aria-disabled="true">{diet.icon}</span>
               {diet.name}

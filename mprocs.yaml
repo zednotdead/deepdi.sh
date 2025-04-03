@@ -5,6 +5,6 @@ procs:
   frontend:
     cmd: ["task", "fe:dev"]
     stop: "SIGKILL"
-  caddy:
-    cmd: ["task", "proxy"]
-    stop: "SIGKILL"
+  # caddy:
+  #   cmd: ["task", "proxy"]
+  #   stop: "SIGKILL"

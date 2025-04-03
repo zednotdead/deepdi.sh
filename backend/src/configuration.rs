@@ -67,7 +67,6 @@ pub struct SessionSettings {
 }
 
 impl Settings {
-    #[tracing::instrument("Getting configuration")]
     pub fn get() -> color_eyre::Result<Self> {
         let base_path = std::env::current_dir().wrap_err("Could not get current directory")?;
         let config_path = base_path.join("config");

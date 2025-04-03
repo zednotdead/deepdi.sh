@@ -8,7 +8,7 @@ async-trait = "0.1.79"
 axum = { version = "0.7.5", features = ["multipart", "macros"] }
 color-eyre = "0.6.3"
 common = { version = "0.0.0", path = "../common" }
-config = "0.14.0"
+config = "0.15.11"
 eyre = "0.6.12"
 regex = "1.10.4"
 rayon = "1.10.0"
@@ -16,21 +16,19 @@ secrecy = { version = "0.8.0", features = ["serde"] }
 serde = "1.0.197"
 serde-aux = "4.5.0"
 shrinkwraprs = "0.3.0"
-sqlx = { version = "0.7.4", features = ["runtime-tokio", "postgres", "tls-rustls", "uuid", "json", "chrono"] }
+sqlx = { version = "0.7.4", features = [
+  "runtime-tokio",
+  "postgres",
+  "tls-rustls",
+  "uuid",
+  "json",
+  "chrono",
+] }
 strum = { version = "0.26.1", features = ["derive", "strum_macros"] }
 strum_macros = "0.26.1"
 thiserror = "1.0.58"
 tokio = { version = "1.36.0", features = ["rt-multi-thread", "macros"] }
 uuid = { version = "1.8.0", features = ["v7", "serde"] }
-axum-tracing-opentelemetry = "0.18.0"
-tracing = "0.1.40"
-tracing-opentelemetry = { version = "0.23", features = ["metrics"] }
-tracing-subscriber = { version = "0.3.18", features = ["json", "env-filter"] }
-opentelemetry = "0.22"
-opentelemetry_sdk = { version = "0.22.0", default-features = false, features = ["trace", "metrics", "rt-tokio"] }
-opentelemetry-otlp = { version = "0.15.0", features = ["logs", "trace", "metrics"] }
-opentelemetry-semantic-conventions = "0.14.0"
-tracing-logfmt-otel = "0.2.0"
 testcontainers = { version = "0.16.6", features = ["blocking"] }
 testcontainers-modules = { version = "0.4.0", features = ["postgres"] }
 reqwest = { version = "0.12.5", features = ["json"] }
@@ -39,6 +37,24 @@ once_cell = "1.19.0"
 assert-json-diff = "2.0.2"
 futures = "0.3.30"
 derive_more = "0.99.18"
+tracing = { version = "0.1.41", features = ["async-await", "log"] }
+opentelemetry_sdk = { version = "0.29.0", features = ["trace", "metrics"] }
+opentelemetry-stdout = "0.29.0"
+opentelemetry = { version = "0.29.1", features = ["trace"] }
+tracing-opentelemetry = "0.30.0"
+tracing-subscriber = { version = "0.3.19", features = [
+  "chrono",
+  "json",
+  "tracing",
+  "env-filter",
+] }
+opentelemetry-otlp = { version = "0.29.0", features = [
+  "grpc-tonic",
+  "reqwest-client",
+] }
+axum-tracing-opentelemetry = "0.28.0"
+tower-http = { version = "0.6.2", features = ["trace", "metrics"] }
+tracing-logfmt = "0.3.5"
 
 [dependencies.serde_json]
 version = "1.0.115"
@@ -48,4 +64,6 @@ features = ["preserve_order"]
 pretty_assertions = "1.4.0"
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage,coverage_nightly)'] }
+unexpected_cfgs = { level = "warn", check-cfg = [
+  'cfg(coverage,coverage_nightly)',
+] }

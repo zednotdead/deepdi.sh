@@ -7,3 +7,4 @@ target/
 .env.production
 *.log
 tempo-data
+frontend/.react-router
