@@ -6,6 +6,7 @@ import { Recipe } from '~/components/recipe/recipe';
 import { Centered } from '~/components/centered';
 import { makeTitle } from '~/utils/makeTitle';
 import { DietList } from '~/components/ingredients/dietList';
+import typia from 'typia';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [
@@ -21,7 +22,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
       if (res.status !== 200) {
         return undefined;
       }
-      return res.json();
+      return typia.assert<RecipeDTO>(res.json());
     });
 
   if (!recipe) return redirect('/');

@@ -1,7 +1,7 @@
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router';
 import { redirect, useLoaderData } from 'react-router';
 import type { IngredientDTO } from 'common/bindings/IngredientDTO';
-import { trace, Span } from '@opentelemetry/api';
+import { SpanStatusCode, trace } from '@opentelemetry/api';
 
 import { Centered } from '~/components/centered';
 import { DietList } from '~/components/ingredients/dietList';
@@ -9,28 +9,33 @@ import { Title } from '~/components/headings';
 import { LexicalToReact } from '~/components/editor/renderReact';
 import { makeTitle } from '~/utils/makeTitle';
 import { safeEditorStateParse } from '~/components/editor/utils';
+import typia from 'typia';
 
-const tracer = trace.getTracer('dice-lib');
+const tracer = trace.getTracer('deepdi.sh-frontend-server');
 
 export async function loader({ params }: LoaderFunctionArgs) {
   if (!params.id) return redirect('/');
+  const ingredient: IngredientDTO | undefined = await tracer.startActiveSpan('load ingredients', async (s) => {
+    let ing = undefined;
+    try {
+      ing = await fetch(`http://localhost:8111/ingredient/${params.id}`)
+        .then((res) => {
+          s.addEvent('finished fetching');
+          s.setAttribute('foo', 'bar');
+          if (res.status !== 200) {
+            s.setStatus({ code: SpanStatusCode.ERROR, message: 'Could not fetch ingredient' });
+            return undefined;
+          }
 
-  tracer.startActiveSpan('load ingredients', (s: Span) => {
-    console.log(2 + 2);
-    s.setAttribute('test', 4);
-    s.end();
-
-    return;
+          return typia.assert<IngredientDTO>(res.json());
+        });
+      s.end();
+    }
+    catch {
+      s.setStatus({ code: SpanStatusCode.ERROR, message: 'Could not fetch ingredient' });
+    }
+    return ing;
   });
-
-  const ingredient: IngredientDTO | undefined = await fetch(`http://localhost:8111/ingredient/${params.id}`)
-    .then((res) => {
-      if (res.status !== 200) {
-        return undefined;
-      }
-
-      return res.json();
-    });
 
   if (!ingredient) return redirect('/');
 

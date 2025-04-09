@@ -40,7 +40,7 @@ function NavSectionButton({ children, asChild, noChevron }: PropsWithChildren<As
   );
 }
 
-function _NavSectionButtonLink({ children, asChild }: PropsWithChildren<AsChild>) {
+/* function NavSectionButtonLink({ children, asChild }: PropsWithChildren<AsChild>) {
   return (
     <NavigationMenuPrimitive.Link
       asChild={asChild}
@@ -56,7 +56,7 @@ function _NavSectionButtonLink({ children, asChild }: PropsWithChildren<AsChild>
       {children}
     </NavigationMenuPrimitive.Link>
   );
-}
+} */
 
 type NavSectionContentProps = { className?: string };
 

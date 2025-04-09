@@ -3,7 +3,7 @@ import { Form, useActionData, useNavigate, useSubmit } from 'react-router';
 import { clsx } from 'clsx';
 import { Controller, useForm } from 'react-hook-form';
 import type { CreateIngredientDTO } from 'common/bindings/CreateIngredientDTO';
-import { assert } from 'typia';
+import typia, { assert } from 'typia';
 import type { SerializedEditorState } from 'lexical';
 import type { IngredientDTO } from 'common/bindings/IngredientDTO';
 import { PenLineIcon } from 'lucide-react';
@@ -40,7 +40,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const createdIngredient: IngredientDTO = await fetch(
     'http://localhost:8111/ingredient/create',
     { method: 'POST', body: JSON.stringify(ingredient), headers: { 'Content-Type': 'application/json' } },
-  ).then(res => res.json());
+  ).then(res => typia.assert<IngredientDTO>(res.json()));
 
   return {
     ingredient: createdIngredient,

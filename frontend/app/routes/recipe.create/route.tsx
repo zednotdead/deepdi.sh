@@ -5,10 +5,10 @@ import { IngredientUnitDTO } from 'common/bindings/IngredientUnitDTO';
 import type { RecipeDTO } from 'common/bindings/RecipeDTO';
 import type { SerializedEditorState } from 'lexical';
 import { PenLineIcon, TrashIcon } from 'lucide-react';
-import { Fragment, useEffect, useState } from 'react';
+import { ChangeEvent, Fragment, useEffect, useState } from 'react';
 import { Controller, FieldArrayWithId, useFieldArray, UseFieldArrayProps, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { assert } from 'typia';
+import typia, { assert } from 'typia';
 import { CreateRecipeDTO } from 'common/bindings/CreateRecipeDTO';
 import { parse as parseDuration } from 'tinyduration';
 
@@ -220,7 +220,7 @@ export default function CreateRecipeRoute() {
             {
               ...register(`ingredients.${index}.amount._type`,
                 {
-                  onChange: (e) => {
+                  onChange: (e: ChangeEvent<HTMLSelectElement>) => {
                     const isOther = e.target.value === 'other';
                     setIsOther(isOther);
 
@@ -418,7 +418,9 @@ export default function CreateRecipeRoute() {
                   <Fragment>
                     <div className="flex flex-row justify-between items-center">
                       <Label className="text-xl" htmlFor={`steps.${i}`}>
-                        Step {i + 1}
+                        Step
+                        {' '}
+                        {i + 1}
                       </Label>
                       <IconButton
                         onClick={() => steps.remove(i)}
@@ -494,7 +496,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const status = res.status;
 
   if (status >= 200 && status < 300) {
-    const recipe: RecipeDTO = await res.json();
+    const recipe = typia.assert<RecipeDTO>(await res.json());
     return {
       status,
       recipe,
@@ -503,13 +505,13 @@ export async function action({ request }: ActionFunctionArgs) {
 
   return {
     errorCode: status,
-    body: await res.json(),
+    body: await res.json() as unknown,
   };
 }
 
 export async function loader() {
   const res = await fetch('http://localhost:8111/ingredient');
-  const ingredients: IngredientDTO[] = await res.json();
+  const ingredients: IngredientDTO[] = typia.assert<IngredientDTO[]>(await res.json());
 
   return {
     availableIngredients: ingredients,

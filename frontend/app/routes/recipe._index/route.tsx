@@ -11,7 +11,7 @@ export const meta: MetaFunction<typeof loader> = () => {
   ];
 };
 
-export async function loader() {
+export function loader() {
   // TODO: Fill in after we implement listing recipes
   return {
   };

@@ -11,6 +11,7 @@ export const EMPTY_RTE = {
         type: 'paragraph',
         version: 1,
         textFormat: 0,
+        textStyle: '',
       },
     ],
     direction: 'ltr',
@@ -44,6 +45,7 @@ export function makeEditorStateFromString(text: string): SerializedEditorState<S
               type: 'paragraph',
               version: 1,
               textFormat: 0,
+              textStyle: '',
             },
           ], direction: 'ltr', format: '', indent: 0, type: 'root', version: 1,
         },
@@ -52,7 +54,7 @@ export function makeEditorStateFromString(text: string): SerializedEditorState<S
 
 export function safeEditorStateParse(text: string): SerializedEditorState<SerializedParagraphNode> {
   try {
-    const json = JSON.parse(text);
+    const json = JSON.parse(text) as SerializedEditorState<SerializedParagraphNode>;
     return json;
   }
   catch {

@@ -17,7 +17,7 @@ export function Label<T extends ElementType>({
   const Component = as || 'label';
 
   return (
-    <Component htmlFor={htmlFor} className={clsx('font-heading text-2xl font-semibold', className)} {...props}>
+    <Component htmlFor={htmlFor as string} className={clsx('font-heading text-2xl font-semibold', className)} {...props}>
       {children}
     </Component>
   );

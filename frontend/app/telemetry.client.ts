@@ -9,15 +9,9 @@ import { getWebAutoInstrumentations } from '@opentelemetry/auto-instrumentations
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto';
 import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
-import { Resource } from '@opentelemetry/resources';
+import { resourceFromAttributes } from '@opentelemetry/resources';
 
 diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
-
-const provider = new WebTracerProvider({
-  resource: new Resource({
-    [ATTR_SERVICE_NAME]: 'deepdi.sh-frontend-web',
-  }),
-});
 
 const traceExporter = new OTLPTraceExporter({
   url: '/v1/traces',
@@ -26,7 +20,12 @@ const traceExporter = new OTLPTraceExporter({
   },
 });
 
-provider.addSpanProcessor(new BatchSpanProcessor(traceExporter));
+const provider = new WebTracerProvider({
+  resource: resourceFromAttributes({
+    [ATTR_SERVICE_NAME]: 'deepdi.sh-frontend-web',
+  }),
+  spanProcessors: [new BatchSpanProcessor(traceExporter)],
+});
 
 provider.register({
   // Changing default contextManager to use ZoneContextManager - supports asynchronous operations - optional
@@ -36,6 +35,7 @@ provider.register({
 
 // Registering instrumentations
 registerInstrumentations({
+  tracerProvider: provider,
   instrumentations: [
     getWebAutoInstrumentations(),
   ],

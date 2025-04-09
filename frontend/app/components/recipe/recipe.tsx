@@ -10,6 +10,7 @@ import { IngredientList } from './ingredientList';
 
 import { convertSecondsToDuration } from '~/utils/convertSecondsToDuration';
 import { Title, Heading, DateText } from '~/components/headings';
+import typia from 'typia';
 
 const Description: FC<PropsWithChildren> = ({ children }) => (
   <div className="mb-2">
@@ -19,8 +20,11 @@ const Description: FC<PropsWithChildren> = ({ children }) => (
 
 const Step: FC<{ step: string; index: number }> = ({ step, index }) => (
   <>
-    <h3 className="text-xl font-heading text-text-50 mb-2">Step {index + 1}</h3>
-    <LexicalToReact data={JSON.parse(step)} />
+    <h3 className="text-xl font-heading text-text-50 mb-2">
+      Step
+      {index + 1}
+    </h3>
+    <LexicalToReact data={typia.json.assertParse(step)} />
   </>
 );
 
@@ -50,14 +54,14 @@ const formatServings = (servings: ServingsTypeDTO): string => {
   }
 };
 
-const convertRecipeTimesToMetadata = (times: RecipeDTO['time']) => {
+const convertRecipeTimesToMetadata = (times: RecipeDTO['time']): Record<string, string> => {
   // TODO: sort metadata
 
   const entries = Object.entries(times).map(([type, time]) => {
     return [type, formatDuration(convertSecondsToDuration(Number(time)))];
   });
 
-  return Object.fromEntries(entries);
+  return Object.fromEntries(entries) as Record<string, string>;
 };
 
 const getDateText = (created: string, updated: string): string => {

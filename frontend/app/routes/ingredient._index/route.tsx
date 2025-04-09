@@ -5,6 +5,7 @@ import type { IngredientDTO } from 'common/bindings/IngredientDTO';
 import { Centered } from '~/components/centered';
 import { Title } from '~/components/headings';
 import { makeTitle } from '~/utils/makeTitle';
+import typia from 'typia';
 
 export const meta: MetaFunction<typeof loader> = () => {
   return [
@@ -15,7 +16,7 @@ export const meta: MetaFunction<typeof loader> = () => {
 export async function loader() {
   const res = await fetch('http://localhost:8111/ingredient', {
   });
-  const ingredients: IngredientDTO[] = await res.json();
+  const ingredients: IngredientDTO[] = typia.assert<IngredientDTO[]>(await res.json());
 
   return {
     ingredients,

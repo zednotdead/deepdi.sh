@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
 /**
  * By default, Remix will handle generating the HTTP Response for you.
  * You are free to delete this file if you'd like to, but if you ever want it revealed again, you can run `npx remix reveal` ✨
@@ -27,17 +28,17 @@ export default function handleRequest(
 ) {
   return isbot(request.headers.get('user-agent') || '')
     ? handleBotRequest(
-      request,
-      responseStatusCode,
-      responseHeaders,
-      reactRouterContext,
-    )
+        request,
+        responseStatusCode,
+        responseHeaders,
+        reactRouterContext,
+      )
     : handleBrowserRequest(
-      request,
-      responseStatusCode,
-      responseHeaders,
-      reactRouterContext,
-    );
+        request,
+        responseStatusCode,
+        responseHeaders,
+        reactRouterContext,
+      );
 }
 
 function handleBotRequest(
