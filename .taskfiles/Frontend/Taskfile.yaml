@@ -7,19 +7,19 @@ vars:
 tasks:
   dev:
     desc: "[FRONTEND] start up development server"
-    cmd: pnpm dev
+    cmd: bun dev
     dir: "{{.dir}}"
   lint:
     desc: "[FRONTEND] lint"
-    cmd: pnpm lint
+    cmd: bun lint
     dir: "{{.dir}}"
   lint:fix:
     desc: "[FRONTEND] fix linting errors"
-    cmd: pnpm lint --fix
+    cmd: bun lint --fix
     dir: "{{.dir}}"
   install:
     desc: "[FRONTEND] install dependencies"
-    cmd: "pnpm install"
+    cmd: "bun install"
     aliases:
       - i
       - deps
