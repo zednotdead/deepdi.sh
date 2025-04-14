@@ -1,4 +1,4 @@
-POST http://localhost:8111/ingredient/create
+POST http://localhost:8111/ingredient
 
 {
     "name": "cucumber",
@@ -9,7 +9,7 @@ HTTP 201
 [Captures]
 id: jsonpath "$.id"
 
-POST http://localhost:8111/recipe/create
+POST http://localhost:8111/recipe
 
 {
   "name": "Testing recipe",

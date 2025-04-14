@@ -16,8 +16,8 @@ use crate::{
 pub async fn deleting_an_existing_ingredient_works() {
     let app = TestApp::new().await;
     let client = Client::new();
-    let ingredient_create_path = app.get_base("ingredient/create");
-    let recipe_create_path = app.get_base("recipe/create");
+    let ingredient_create_path = app.get_base("ingredient");
+    let recipe_create_path = app.get_base("recipe");
 
     let ingredients_to_create = [ingredient_fixture(), ingredient_fixture_meat()];
 
@@ -77,8 +77,8 @@ pub async fn deleting_an_existing_ingredient_works() {
 pub async fn deleting_an_ingredient_that_doesnt_appear_in_recipe_errors() {
     let app = TestApp::new().await;
     let client = Client::new();
-    let ingredient_create_path = app.get_base("ingredient/create");
-    let recipe_create_path = app.get_base("recipe/create");
+    let ingredient_create_path = app.get_base("ingredient");
+    let recipe_create_path = app.get_base("recipe");
 
     let ingredients_to_create = [
         ingredient_fixture(),
@@ -134,7 +134,7 @@ pub async fn deleting_an_ingredient_that_doesnt_appear_in_recipe_errors() {
 pub async fn deleting_an_ingredient_in_recipe_that_doesnt_exist_errors() {
     let app = TestApp::new().await;
     let client = Client::new();
-    let ingredient_create_path = app.get_base("ingredient/create");
+    let ingredient_create_path = app.get_base("ingredient");
 
     let ingredients_to_create = [
         ingredient_fixture(),
@@ -176,8 +176,8 @@ pub async fn deleting_an_ingredient_in_recipe_that_doesnt_exist_errors() {
 pub async fn deleting_the_last_ingredient_in_recipe_errors() {
     let app = TestApp::new().await;
     let client = Client::new();
-    let ingredient_create_path = app.get_base("ingredient/create");
-    let recipe_create_path = app.get_base("recipe/create");
+    let ingredient_create_path = app.get_base("ingredient");
+    let recipe_create_path = app.get_base("recipe");
 
     let ingredients_to_create = [ingredient_fixture()];
 

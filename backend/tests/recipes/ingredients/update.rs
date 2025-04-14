@@ -16,8 +16,8 @@ use crate::{
 async fn updating_an_ingredient_in_a_recipe_works() {
     let app = TestApp::new().await;
     let client = Client::new();
-    let ingredient_create_path = app.get_base("ingredient/create");
-    let recipe_create_path = app.get_base("recipe/create");
+    let ingredient_create_path = app.get_base("ingredient");
+    let recipe_create_path = app.get_base("recipe");
 
     let ingredient: IngredientDTO = client
         .post(&ingredient_create_path)
@@ -85,8 +85,8 @@ async fn updating_an_ingredient_in_a_recipe_works() {
 async fn updating_a_nonexistent_ingredient_in_a_recipe_errors() {
     let app = TestApp::new().await;
     let client = Client::new();
-    let ingredient_create_path = app.get_base("ingredient/create");
-    let recipe_create_path = app.get_base("recipe/create");
+    let ingredient_create_path = app.get_base("ingredient");
+    let recipe_create_path = app.get_base("recipe");
 
     let ingredients_to_create = [ingredient_fixture(), ingredient_fixture_meat()];
 
@@ -145,7 +145,7 @@ async fn updating_a_nonexistent_ingredient_in_a_recipe_errors() {
 async fn updating_an_ingredient_in_a_nonexistent_recipe_errors() {
     let app = TestApp::new().await;
     let client = Client::new();
-    let ingredient_create_path = app.get_base("ingredient/create");
+    let ingredient_create_path = app.get_base("ingredient");
 
     let ingredient: IngredientDTO = client
         .post(&ingredient_create_path)

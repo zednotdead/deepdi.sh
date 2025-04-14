@@ -11,8 +11,8 @@ use crate::{
 async fn deleting_a_recipe_works() {
     let app = TestApp::new().await;
     let client = Client::new();
-    let ingredient_create_path = app.get_base("ingredient/create");
-    let recipe_create_path = app.get_base("recipe/create");
+    let ingredient_create_path = app.get_base("ingredient");
+    let recipe_create_path = app.get_base("recipe");
 
     let ingredients_input = [ingredient_fixture()];
 

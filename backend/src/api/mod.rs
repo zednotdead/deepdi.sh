@@ -4,14 +4,19 @@ mod routes;
 
 use std::sync::Arc;
 
-use crate::domain::repositories::{
-    ingredients::{
-        in_memory::InMemoryIngredientRepository, postgres::PostgresIngredientRepository,
-        IngredientRepository, IngredientRepositoryService,
+use crate::domain::{
+    repositories::{
+        ingredients::{
+            in_memory::InMemoryIngredientRepository, postgres::PostgresIngredientRepository,
+            IngredientRepository, IngredientRepositoryService,
+        },
+        recipe::{
+            in_memory::InMemoryRecipeRepository, postgres::PostgresRecipeRepository,
+            RecipeRepository, RecipeRepositoryService,
+        },
     },
-    recipe::{
-        in_memory::InMemoryRecipeRepository, postgres::PostgresRecipeRepository, RecipeRepository,
-        RecipeRepositoryService,
+    services::message::{
+        kafka::KafkaMessageService, stub::StubMessageService, MessageService, MessageServiceImpl,
     },
 };
 use axum::{
@@ -32,17 +37,18 @@ pub struct App {
 pub struct AppState {
     pub ingredient_repository: IngredientRepositoryService,
     pub recipe_repository: RecipeRepositoryService,
+    pub message_service: MessageServiceImpl,
 }
 
 impl App {
     fn get_router() -> Router<AppState> {
         Router::new()
-            .route("/ingredient/create", post(create_ingredient_route))
             .route("/ingredient/:id", put(update_ingredient_route))
             .route("/ingredient/:id", get(get_ingredient_by_id_route))
             .route("/ingredient/:id", delete(delete_ingredient_route))
+            .route("/ingredient", post(create_ingredient_route))
             .route("/ingredient", get(get_all_ingredients_route))
-            .route("/recipe/create", post(create_recipe_route))
+            .route("/recipe", post(create_recipe_route))
             .route("/recipe/:id", get(get_recipe_by_id_route))
             .route("/recipe/:id", delete(delete_recipe_route))
             .route("/recipe/:id", put(update_recipe_route))
@@ -62,15 +68,15 @@ impl App {
             .layer(OtelAxumLayer::default())
     }
 
-    pub fn new<I: IngredientRepository + 'static, R: RecipeRepository + 'static>(
-        irs: I,
-        rrs: R,
+    pub fn new(
+        irs: Arc<Box<dyn IngredientRepository>>,
+        rrs: Arc<Box<dyn RecipeRepository>>,
+        ms: MessageServiceImpl,
     ) -> Result<Self> {
-        let ingredient_repository: IngredientRepositoryService = Arc::new(Box::new(irs));
-        let recipe_repository: RecipeRepositoryService = Arc::new(Box::new(rrs));
         let state = AppState {
-            ingredient_repository,
-            recipe_repository,
+            ingredient_repository: irs,
+            recipe_repository: rrs,
+            message_service: ms,
         };
         let router = Self::get_router().with_state(state);
 
@@ -88,6 +94,7 @@ impl App {
 #[derive(Default)]
 pub struct AppBuilder {
     postgres_db: Option<PgPool>,
+    kafka: Option<String>,
 }
 
 impl AppBuilder {
@@ -97,18 +104,33 @@ impl AppBuilder {
         self
     }
 
+    pub fn with_kafka(mut self, address: &str) -> Self {
+        self.kafka = Some(address.to_string());
+
+        self
+    }
+
     pub fn build(self) -> Result<App> {
-        if let Some(postgres_db) = self.postgres_db {
-            App::new(
-                PostgresIngredientRepository::new(postgres_db.clone()),
-                PostgresRecipeRepository::new(postgres_db),
-            )
+        let irs: Box<dyn IngredientRepository> = if let Some(postgres_db) = self.postgres_db.clone()
+        {
+            Box::new(PostgresIngredientRepository::new(postgres_db.clone()))
         } else {
-            App::new(
-                InMemoryIngredientRepository::new(),
-                InMemoryRecipeRepository::new(),
-            )
-        }
+            Box::new(InMemoryIngredientRepository::new())
+        };
+
+        let rrs: Box<dyn RecipeRepository> = if let Some(postgres_db) = self.postgres_db.clone() {
+            Box::new(PostgresRecipeRepository::new(postgres_db.clone()))
+        } else {
+            Box::new(InMemoryRecipeRepository::new())
+        };
+
+        let ms: Box<dyn MessageService> = if let Some(kafka_url) = self.kafka {
+            Box::new(KafkaMessageService::new(&kafka_url)?)
+        } else {
+            Box::new(StubMessageService)
+        };
+
+        App::new(Arc::new(irs), Arc::new(rrs), Arc::new(ms))
     }
 
     pub fn new() -> Self {

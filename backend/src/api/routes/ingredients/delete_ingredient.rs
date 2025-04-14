@@ -34,17 +34,24 @@ impl IntoResponse for DeleteIngredientError {
 
 #[tracing::instrument(
     "[ROUTE] Deleting an ingredient",
-    skip(ingredient_repository, recipe_repository)
+    skip(ingredient_repository, recipe_repository, message_service)
 )]
 pub async fn delete_ingredient_route(
     State(AppState {
         ingredient_repository,
         recipe_repository,
+        message_service,
         ..
     }): State<AppState>,
     Path(ingredient_id): Path<Uuid>,
 ) -> Result<(), DeleteIngredientError> {
-    delete_ingredient(ingredient_repository, recipe_repository, &ingredient_id).await?;
+    delete_ingredient(
+        ingredient_repository,
+        recipe_repository,
+        message_service,
+        &ingredient_id,
+    )
+    .await?;
 
     Ok(())
 }

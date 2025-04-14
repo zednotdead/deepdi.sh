@@ -1,13 +1,13 @@
 use thiserror::Error;
 use uuid::Uuid;
 
-use crate::domain::repositories::{
+use crate::domain::{repositories::{
     ingredients::{
         errors::{DeleteIngredientError as DeleteIngredientErrorInternal, GetIngredientByIdError},
         IngredientRepositoryService,
     },
     recipe::RecipeRepositoryService,
-};
+}, services::message::MessageServiceImpl};
 
 #[derive(Error, Debug, strum::AsRefStr)]
 pub enum DeleteIngredientError {
@@ -36,10 +36,11 @@ impl From<GetIngredientByIdError> for DeleteIngredientError {
     }
 }
 
-#[tracing::instrument("[COMMAND] Deleting a new ingredient", skip(repo, recipe_repo))]
+#[tracing::instrument("[COMMAND] Deleting a new ingredient", skip(repo, recipe_repo, message_service))]
 pub async fn delete_ingredient(
     repo: IngredientRepositoryService,
     recipe_repo: RecipeRepositoryService,
+    message_service: MessageServiceImpl,
     input: &Uuid,
 ) -> Result<(), DeleteIngredientError> {
     let ingredient = repo.get_by_id(input).await?;
@@ -51,7 +52,8 @@ pub async fn delete_ingredient(
         return Err(DeleteIngredientError::InUseByRecipe);
     };
 
-    repo.delete(ingredient).await?;
+    repo.delete(ingredient.clone()).await?;
+    message_service.ingredient_deleted(&ingredient).await?;
 
     Ok(())
 }

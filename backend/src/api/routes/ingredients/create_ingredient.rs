@@ -27,10 +27,11 @@ impl IntoResponse for CreateIngredientError {
     }
 }
 
-#[tracing::instrument("[ROUTE] Creating a new ingredient", skip(ingredient_repository))]
+#[tracing::instrument("[ROUTE] Creating a new ingredient", skip(ingredient_repository, message_service))]
 pub async fn create_ingredient_route(
     State(AppState {
         ingredient_repository,
+        message_service,
         ..
     }): State<AppState>,
     Json(body): Json<CreateIngredientDTO>,
@@ -40,7 +41,7 @@ pub async fn create_ingredient_route(
         description: &body.description,
         diet_violations: body.diet_violations.unwrap_or_default(),
     };
-    let result = create_ingredient(ingredient_repository, &input).await?;
+    let result = create_ingredient(ingredient_repository, message_service, &input).await?;
     let result: IngredientDTO = result.into();
 
     Ok((StatusCode::CREATED, Json(result)))

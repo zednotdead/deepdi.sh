@@ -18,8 +18,8 @@ use crate::{
 async fn adding_an_ingredient_to_a_recipe_works() {
     let app = TestApp::new().await;
     let client = Client::new();
-    let ingredient_create_path = app.get_base("ingredient/create");
-    let recipe_create_path = app.get_base("recipe/create");
+    let ingredient_create_path = app.get_base("ingredient");
+    let recipe_create_path = app.get_base("recipe");
 
     let ingredients_to_create = [ingredient_fixture(), ingredient_fixture_meat()];
 
@@ -90,8 +90,8 @@ async fn adding_an_ingredient_to_a_recipe_works() {
 async fn adding_a_nonexistent_ingredient_to_a_recipe_fails() {
     let app = TestApp::new().await;
     let client = Client::new();
-    let ingredient_create_path = app.get_base("ingredient/create");
-    let recipe_create_path = app.get_base("recipe/create");
+    let ingredient_create_path = app.get_base("ingredient");
+    let recipe_create_path = app.get_base("recipe");
 
     let ingredients_to_create = [ingredient_fixture()];
 
@@ -150,7 +150,7 @@ async fn adding_a_nonexistent_ingredient_to_a_recipe_fails() {
 async fn adding_an_ingredient_to_a_nonexistent_recipe_fails() {
     let app = TestApp::new().await;
     let client = Client::new();
-    let ingredient_create_path = app.get_base("ingredient/create");
+    let ingredient_create_path = app.get_base("ingredient");
 
     let ingredients_to_create = [ingredient_fixture()];
 

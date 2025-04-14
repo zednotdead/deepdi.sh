@@ -14,7 +14,10 @@ async fn main() -> Result<()> {
 
     let config = Settings::get().unwrap();
     let db = PgPool::connect_lazy_with(config.database.with_db());
-    let app = AppBuilder::new().with_postgres_database(db).build()?;
+    let app = AppBuilder::new()
+        .with_postgres_database(db)
+        .with_kafka("localhost:9092")
+        .build()?;
     let listener = config.application.get_listener().await?;
     app.serve(listener).await?;
 

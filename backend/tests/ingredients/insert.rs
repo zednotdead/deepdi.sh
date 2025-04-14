@@ -8,7 +8,7 @@ use crate::setup::TestApp;
 async fn inserting_ingredient_succeeds() {
     let app = TestApp::new().await;
     let client = Client::new();
-    let path = app.get_base("ingredient/create");
+    let path = app.get_base("ingredient");
 
     let request = client
         .post(&path)
@@ -45,7 +45,7 @@ async fn inserting_ingredient_succeeds() {
 async fn sending_insufficient_data_errors() {
     let app = TestApp::new().await;
     let client = Client::new();
-    let path = app.get_base("ingredient/create");
+    let path = app.get_base("ingredient");
 
     let request = client
         .post(&path)
@@ -64,7 +64,7 @@ async fn sending_insufficient_data_errors() {
 async fn incorrect_diets_are_ignored() {
     let app = TestApp::new().await;
     let client = Client::new();
-    let path = app.get_base("ingredient/create");
+    let path = app.get_base("ingredient");
 
     let request = client
         .post(&path)

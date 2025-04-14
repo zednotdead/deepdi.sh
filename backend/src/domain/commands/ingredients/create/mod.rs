@@ -4,6 +4,7 @@ use crate::domain::entities::ingredient::*;
 use crate::domain::repositories::ingredients::{
     errors::InsertIngredientError, IngredientRepositoryService,
 };
+use crate::domain::services::message::MessageServiceImpl;
 
 use self::errors::ValidationError;
 use self::types::DietViolations;
@@ -63,13 +64,15 @@ impl<'a> TryFrom<&CreateIngredient<'a>> for Ingredient {
     }
 }
 
-#[tracing::instrument("[COMMAND] Creating a new ingredient", skip(repo))]
+#[tracing::instrument("[COMMAND] Creating a new ingredient", skip(repo, message_service))]
 pub async fn create_ingredient(
     repo: IngredientRepositoryService,
+    message_service: MessageServiceImpl,
     input: &CreateIngredient<'_>,
 ) -> Result<Ingredient, CreateIngredientError> {
     let ingredient = Ingredient::try_from(input)?;
     let ingredient = repo.insert(ingredient).await?;
+    message_service.ingredient_added(&ingredient).await?;
     Ok(ingredient)
 }
 

@@ -14,8 +14,8 @@ use crate::{
 async fn updates_recipe_correctly() {
     let app = TestApp::new().await;
     let client = Client::new();
-    let ingredient_create_path = app.get_base("ingredient/create");
-    let recipe_create_path = app.get_base("recipe/create");
+    let ingredient_create_path = app.get_base("ingredient");
+    let recipe_create_path = app.get_base("recipe");
 
     let ingredients_input = [ingredient_fixture()];
 
@@ -118,8 +118,8 @@ async fn updating_nonexistent_recipe_errors() {
 async fn updating_empty_changeset_errors() {
     let app = TestApp::new().await;
     let client = Client::new();
-    let ingredient_create_path = app.get_base("ingredient/create");
-    let recipe_create_path = app.get_base("recipe/create");
+    let ingredient_create_path = app.get_base("ingredient");
+    let recipe_create_path = app.get_base("recipe");
 
     let ingredients_input = [ingredient_fixture()];
 

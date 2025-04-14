@@ -16,8 +16,8 @@ use crate::{
 async fn inserts_recipe_correctly() {
     let app = TestApp::new().await;
     let client = Client::new();
-    let ingredient_create_path = app.get_base("ingredient/create");
-    let recipe_create_path = app.get_base("recipe/create");
+    let ingredient_create_path = app.get_base("ingredient");
+    let recipe_create_path = app.get_base("recipe");
 
     let ingredients_input = [ingredient_fixture()];
 
@@ -75,8 +75,8 @@ async fn inserts_recipe_correctly() {
 async fn inserting_recipe_with_multiple_ingredients_generates_diet_violations_correctly() {
     let app = TestApp::new().await;
     let client = Client::new();
-    let ingredient_create_path = app.get_base("ingredient/create");
-    let recipe_create_path = app.get_base("recipe/create");
+    let ingredient_create_path = app.get_base("ingredient");
+    let recipe_create_path = app.get_base("recipe");
 
     let ingredients_input = [ingredient_fixture(), ingredient_fixture_meat()];
 
@@ -134,7 +134,7 @@ async fn inserting_recipe_with_multiple_ingredients_generates_diet_violations_co
 async fn inserting_recipe_with_incorrect_ingredients_fails() {
     let app = TestApp::new().await;
     let client = Client::new();
-    let recipe_create_path = app.get_base("recipe/create");
+    let recipe_create_path = app.get_base("recipe");
 
     let data = serde_json::json!({
         "name": "A diced cucumber",
@@ -179,8 +179,8 @@ async fn inserting_recipe_with_incorrect_ingredients_fails() {
 async fn inserting_recipe_with_partially_incorrect_ingredients() {
     let app = TestApp::new().await;
     let client = Client::new();
-    let recipe_create_path = app.get_base("recipe/create");
-    let ingredient_create_path = app.get_base("ingredient/create");
+    let recipe_create_path = app.get_base("recipe");
+    let ingredient_create_path = app.get_base("ingredient");
 
     let ingredients_input = [ingredient_fixture()];
 

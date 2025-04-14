@@ -9,17 +9,22 @@ use crate::domain::{
         Ingredient,
     },
     repositories::ingredients::{IngredientRepository, IngredientRepositoryService},
+    services::message::{MessageService, MessageServiceImpl},
 };
 
-pub async fn creates_an_ingredient(repo: impl IngredientRepository) {
+pub async fn creates_an_ingredient(
+    repo: impl IngredientRepository,
+    message_service: impl MessageService,
+) {
     let given = CreateIngredient {
         name: "Tomato",
         description: "Description of a tomato",
         diet_violations: vec!["Vegan".into()],
     };
     let repo: IngredientRepositoryService = Arc::new(Box::new(repo));
+    let ms: MessageServiceImpl = Arc::new(Box::new(message_service));
 
-    let when = create_ingredient(repo.clone(), &given).await.unwrap();
+    let when = create_ingredient(repo.clone(), ms, &given).await.unwrap();
 
     // THEN
 
@@ -28,7 +33,10 @@ pub async fn creates_an_ingredient(repo: impl IngredientRepository) {
     assert!(when.diet_violations.contains(&DietViolations::Vegan));
 }
 
-pub async fn incorrect_diets_do_not_get_included(repo: impl IngredientRepository) {
+pub async fn incorrect_diets_do_not_get_included(
+    repo: impl IngredientRepository,
+    message_service: impl MessageService,
+) {
     let given = CreateIngredient {
         name: "Tomato",
         description: "Description of a tomato",
@@ -36,8 +44,9 @@ pub async fn incorrect_diets_do_not_get_included(repo: impl IngredientRepository
     };
 
     let repo: IngredientRepositoryService = Arc::new(Box::new(repo));
+    let ms: MessageServiceImpl = Arc::new(Box::new(message_service));
 
-    let when = create_ingredient(repo.clone(), &given).await.unwrap();
+    let when = create_ingredient(repo.clone(), ms, &given).await.unwrap();
 
     // THEN
 
@@ -45,7 +54,10 @@ pub async fn incorrect_diets_do_not_get_included(repo: impl IngredientRepository
     assert_eq!(when.diet_violations.len(), 1);
 }
 
-pub async fn empty_name_fails(repo: impl IngredientRepository) {
+pub async fn empty_name_fails(
+    repo: impl IngredientRepository,
+    message_service: impl MessageService,
+) {
     let given = CreateIngredient {
         name: "",
         description: "Description of a tomato",
@@ -53,15 +65,21 @@ pub async fn empty_name_fails(repo: impl IngredientRepository) {
     };
 
     let repo: IngredientRepositoryService = Arc::new(Box::new(repo));
+    let ms: MessageServiceImpl = Arc::new(Box::new(message_service));
 
-    let when = create_ingredient(repo.clone(), &given).await.unwrap_err();
+    let when = create_ingredient(repo.clone(), ms, &given)
+        .await
+        .unwrap_err();
 
     // THEN
 
     assert!(matches!(when, CreateIngredientError::EmptyField("name")));
 }
 
-pub async fn empty_description_fails(repo: impl IngredientRepository) {
+pub async fn empty_description_fails(
+    repo: impl IngredientRepository,
+    message_service: impl MessageService,
+) {
     let given = CreateIngredient {
         name: "Tomato",
         description: "",
@@ -69,8 +87,9 @@ pub async fn empty_description_fails(repo: impl IngredientRepository) {
     };
 
     let repo: IngredientRepositoryService = Arc::new(Box::new(repo));
+    let ms: MessageServiceImpl = Arc::new(Box::new(message_service));
 
-    let when = create_ingredient(repo.clone(), &given).await.unwrap_err();
+    let when = create_ingredient(repo.clone(), ms, &given).await.unwrap_err();
 
     // THEN
 
@@ -80,7 +99,10 @@ pub async fn empty_description_fails(repo: impl IngredientRepository) {
     ));
 }
 
-pub async fn incorrect_ingredient_is_not_persisted(repo: impl IngredientRepository) {
+pub async fn incorrect_ingredient_is_not_persisted(
+    repo: impl IngredientRepository,
+    message_service: impl MessageService,
+) {
     let given = CreateIngredient {
         name: "",
         description: "Description of a tomato",
@@ -88,8 +110,9 @@ pub async fn incorrect_ingredient_is_not_persisted(repo: impl IngredientReposito
     };
 
     let repo: IngredientRepositoryService = Arc::new(Box::new(repo));
+    let ms: MessageServiceImpl = Arc::new(Box::new(message_service));
 
-    let when = create_ingredient(repo.clone(), &given).await.unwrap_err();
+    let when = create_ingredient(repo.clone(), ms, &given).await.unwrap_err();
 
     // THEN
 
@@ -105,6 +128,7 @@ pub async fn incorrect_ingredient_is_not_persisted(repo: impl IngredientReposito
 
 pub async fn inserting_an_ingredient_with_a_name_that_already_exists_fails(
     repo: impl IngredientRepository,
+    message_service: impl MessageService,
 ) {
     let given = Ingredient {
         id: Uuid::from_u128(1),
@@ -113,11 +137,13 @@ pub async fn inserting_an_ingredient_with_a_name_that_already_exists_fails(
         diet_violations: WhichDiets::new(),
     };
     let repo: IngredientRepositoryService = Arc::new(Box::new(repo));
+    let ms: MessageServiceImpl = Arc::new(Box::new(message_service));
 
     repo.insert(given.clone()).await.unwrap();
 
     let result = create_ingredient(
         repo,
+        ms,
         &CreateIngredient {
             name: given.name.as_str(),
             description: "This is a different description",
