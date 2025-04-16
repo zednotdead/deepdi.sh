@@ -1,0 +1,69 @@
+prometheus.exporter.postgres "database" {
+  data_source_names = ["postgresql://recipes:recipes@db:5432/recipes?sslmode=disable"]
+}
+
+prometheus.scrape "default" {
+    targets    = prometheus.exporter.postgres.database.targets
+    forward_to = [prometheus.remote_write.default.receiver]
+}
+
+otelcol.receiver.otlp "default" {
+  grpc {}
+  http {}
+
+  output {
+    logs = [otelcol.processor.batch.default.input]
+    traces = [otelcol.processor.batch.default.input]
+    metrics = [otelcol.processor.batch.default.input]
+  }
+}
+
+tracing {
+  sampling_fraction = 0.1
+
+  write_to = [otelcol.exporter.otlp.tempo.input]
+}
+
+otelcol.processor.batch "default" {
+    output {
+      logs = [otelcol.exporter.otlphttp.loki.input]
+      traces = [otelcol.exporter.otlp.tempo.input]
+      metrics = [otelcol.exporter.prometheus.default.input]
+    }
+}
+
+otelcol.exporter.otlp "tempo" {
+  client {
+    endpoint = "tempo:4317"
+    tls {
+      insecure = true
+    }
+  }
+}
+
+otelcol.exporter.otlphttp "loki" {
+  client {
+    endpoint = "http://loki:3100/otlp"
+  }
+}
+
+otelcol.exporter.prometheus "default" {
+  forward_to = [prometheus.remote_write.default.receiver]
+}
+
+prometheus.remote_write "default" {
+    endpoint {
+	url = "http://prometheus:9090/api/v1/write"
+    }
+}
+
+logging {
+  level = "debug"
+  write_to = [loki.write.default.receiver]
+}
+
+loki.write "default" {
+    endpoint {
+        url = "http://loki:3100/loki/api/v1/push"
+    }
+}

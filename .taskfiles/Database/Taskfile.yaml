@@ -1,9 +1,6 @@
 ---
 # yaml-language-server: $schema=https://taskfile.dev/schema.json
 version: "3"
-includes:
-  backend: 
-    taskfile: ../Backend/Taskfile.yaml
 tasks:
   sql:
     desc: "Open psql shell"

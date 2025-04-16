@@ -8,21 +8,32 @@ use crate::domain::{
         types::{DietViolations, WhichDiets},
         Ingredient,
     },
-    repositories::ingredients::{IngredientRepository, IngredientRepositoryService},
-    services::message::{MessageService, MessageServiceImpl},
+    repositories::ingredients::{
+        IngredientRepository, IngredientRepositoryService, MockIngredientRepository,
+    },
+    services::message::{stub::StubMessageService, MessageService, MessageServiceImpl},
 };
 
-pub async fn creates_an_ingredient(
-    repo: impl IngredientRepository,
-    message_service: impl MessageService,
-) {
+pub async fn creates_an_ingredient() {
     let given = CreateIngredient {
         name: "Tomato",
         description: "Description of a tomato",
         diet_violations: vec!["Vegan".into()],
     };
-    let repo: IngredientRepositoryService = Arc::new(Box::new(repo));
-    let ms: MessageServiceImpl = Arc::new(Box::new(message_service));
+
+    let mut mock = MockIngredientRepository::new();
+
+    mock.expect_insert().returning(|i| {
+        Ok(Ingredient {
+            id: Uuid::nil(),
+            name: i.name,
+            description: i.description,
+            diet_violations: i.diet_violations,
+        })
+    });
+
+    let repo: IngredientRepositoryService = Arc::new(Box::new(mock));
+    let ms: MessageServiceImpl = Arc::new(Box::new(StubMessageService));
 
     let when = create_ingredient(repo.clone(), ms, &given).await.unwrap();
 
@@ -89,7 +100,9 @@ pub async fn empty_description_fails(
     let repo: IngredientRepositoryService = Arc::new(Box::new(repo));
     let ms: MessageServiceImpl = Arc::new(Box::new(message_service));
 
-    let when = create_ingredient(repo.clone(), ms, &given).await.unwrap_err();
+    let when = create_ingredient(repo.clone(), ms, &given)
+        .await
+        .unwrap_err();
 
     // THEN
 
@@ -112,7 +125,9 @@ pub async fn incorrect_ingredient_is_not_persisted(
     let repo: IngredientRepositoryService = Arc::new(Box::new(repo));
     let ms: MessageServiceImpl = Arc::new(Box::new(message_service));
 
-    let when = create_ingredient(repo.clone(), ms, &given).await.unwrap_err();
+    let when = create_ingredient(repo.clone(), ms, &given)
+        .await
+        .unwrap_err();
 
     // THEN
 

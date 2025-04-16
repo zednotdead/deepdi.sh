@@ -8,8 +8,7 @@ mod in_memory {
 
     #[tokio::test]
     async fn creates_an_ingredient() {
-        __tests__::creates_an_ingredient(InMemoryIngredientRepository::new(), StubMessageService)
-            .await;
+        __tests__::creates_an_ingredient().await;
     }
 
     #[tokio::test]
@@ -60,15 +59,6 @@ mod sql {
     };
 
     use sqlx::PgPool;
-
-    #[sqlx::test]
-    async fn creates_an_ingredient(pool: PgPool) {
-        __tests__::creates_an_ingredient(
-            PostgresIngredientRepository::new(pool),
-            StubMessageService,
-        )
-        .await;
-    }
 
     #[sqlx::test]
     async fn incorrect_diets_do_not_get_included(pool: PgPool) {

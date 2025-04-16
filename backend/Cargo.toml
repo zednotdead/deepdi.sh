@@ -42,20 +42,16 @@ opentelemetry_sdk = { version = "0.29.0", features = ["trace", "metrics"] }
 opentelemetry-stdout = "0.29.0"
 opentelemetry = { version = "0.29.1", features = ["trace"] }
 tracing-opentelemetry = "0.30.0"
-tracing-subscriber = { version = "0.3.19", features = [
-  "chrono",
-  "json",
-  "tracing",
-  "env-filter",
-] }
-opentelemetry-otlp = { version = "0.29.0", features = [
-  "grpc-tonic",
-  "reqwest-client",
-] }
+tracing-subscriber = { version = "0.3.19", features = ["chrono", "json", "tracing", "env-filter", "registry", "std"] }
+opentelemetry-otlp = { version = "0.29.0", features = ["grpc-tonic"] }
 axum-tracing-opentelemetry = "0.28.0"
 tower-http = { version = "0.6.2", features = ["trace", "metrics"] }
 tracing-logfmt = "0.3.5"
 rdkafka = "0.37.0"
+mockall = "0.13.1"
+opentelemetry-appender-tracing = { version = "0.29.1", features = [
+  "tracing-opentelemetry",
+] }
 
 [dependencies.serde_json]
 version = "1.0.115"
