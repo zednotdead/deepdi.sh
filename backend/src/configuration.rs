@@ -1,4 +1,8 @@
-use eyre::Context;
+use eyre::eyre;
+use figment::{
+    providers::{Env, Format, Yaml},
+    Figment, Profile,
+};
 use secrecy::{ExposeSecret, Secret};
 use serde::Deserialize;
 use serde_aux::field_attributes::deserialize_number_from_string;
@@ -11,6 +15,12 @@ pub enum Environment {
     Development,
     #[strum(serialize = "prod")]
     Production,
+}
+
+impl From<Environment> for Profile {
+    fn from(val: Environment) -> Self {
+        Profile::new(&val.to_string())
+    }
 }
 
 impl TryFrom<String> for Environment {
@@ -68,33 +78,27 @@ pub struct SessionSettings {
 
 impl Settings {
     pub fn get() -> color_eyre::Result<Self> {
-        let base_path = std::env::current_dir().wrap_err("Could not get current directory")?;
-        let config_path = base_path.join("config");
-
         let environment: Environment = std::env::var("APP_ENV")
             .unwrap_or_else(|_| "dev".into())
             .try_into()
             .map_err(|e| eyre::eyre!("{}", e))?;
 
-        let env_config = format!("{}.yaml", environment);
+        let figment = Figment::new()
+            .merge(Yaml::file("config/base.yaml"))
+            .merge(Env::prefixed("DEEPDISH_"))
+            .merge(Yaml::file("config/dev.yaml").profile("dev"))
+            .merge(Yaml::file("config/prod.yaml").profile("prod"));
 
-        let settings = config::Config::builder()
-            .add_source(config::File::from(config_path.join("base.yaml")))
-            .add_source(config::File::from(config_path.join(env_config)))
-            .add_source(
-                config::Environment::with_prefix("APP")
-                    .prefix_separator("_")
-                    .separator("__"),
-            )
-            .build()?;
-        Ok(settings.try_deserialize::<Self>()?)
+        figment
+            .select(environment)
+            .extract()
+            .map_err(|_| eyre!("Could not load config file"))
     }
 }
 
 impl DatabaseSettings {
     pub fn with_db(&self) -> PgConnectOptions {
         self.without_db().database(&self.database_name)
-        // .log_statements(tracing_log::log::LevelFilter::Trace)
     }
 
     pub fn without_db(&self) -> PgConnectOptions {
