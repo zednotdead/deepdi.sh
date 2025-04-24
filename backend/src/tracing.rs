@@ -7,16 +7,19 @@ use opentelemetry_sdk::metrics::{MeterProviderBuilder, PeriodicReader, SdkMeterP
 use opentelemetry_sdk::propagation::{BaggagePropagator, TraceContextPropagator};
 use opentelemetry_sdk::trace::SdkTracerProvider;
 use opentelemetry_sdk::Resource;
+use tracing::level_filters::LevelFilter;
 use tracing_opentelemetry::MetricsLayer;
 use tracing_subscriber::{layer::SubscriberExt, Registry};
 use tracing_subscriber::{EnvFilter, Layer};
 
+#[coverage(off)]
 fn resource() -> Resource {
     Resource::builder()
         .with_service_name("deepdi.sh-backend")
         .build()
 }
 
+#[coverage(off)]
 fn init_meter_provider() -> Result<SdkMeterProvider> {
     let exporter = opentelemetry_otlp::MetricExporter::builder()
         .with_tonic()
@@ -37,6 +40,7 @@ fn init_meter_provider() -> Result<SdkMeterProvider> {
     Ok(meter_provider)
 }
 
+#[coverage(off)]
 fn init_tracer_provider() -> Result<SdkTracerProvider> {
     let otlp_exporter_tracer = opentelemetry_otlp::SpanExporter::builder()
         .with_tonic()
@@ -50,6 +54,7 @@ fn init_tracer_provider() -> Result<SdkTracerProvider> {
     Ok(tracer_provider)
 }
 
+#[coverage(off)]
 fn init_logger_provider() -> Result<SdkLoggerProvider> {
     let log_exporter = opentelemetry_otlp::LogExporter::builder()
         .with_tonic()
@@ -63,7 +68,7 @@ fn init_logger_provider() -> Result<SdkLoggerProvider> {
     Ok(log_provider)
 }
 
-#[cfg_attr(coverage_nightly, coverage(off))]
+#[coverage(off)]
 pub fn init_tracing() -> Result<()> {
     let propagator = TextMapCompositePropagator::new(vec![
         Box::new(TraceContextPropagator::new()),
@@ -82,8 +87,19 @@ pub fn init_tracing() -> Result<()> {
         .with_tracer(tracer)
         .with_error_records_to_exceptions(true);
 
-    let otel_log =
-        OpenTelemetryTracingBridge::new(&logger_provider).with_filter(EnvFilter::from_default_env());
+    let otel_log = OpenTelemetryTracingBridge::new(&logger_provider).with_filter(
+        EnvFilter::builder()
+            .with_default_directive(LevelFilter::DEBUG.into())
+            .with_env_var(EnvFilter::DEFAULT_ENV)
+            .parse("")?
+            .add_directive("h2=info".parse()?)
+            .add_directive("tonic=error".parse()?)
+            .add_directive("tower=error".parse()?)
+            .add_directive("opentelemetry_sdk=error".parse()?)
+            .add_directive("opentelemetry-otlp=error".parse()?)
+            .add_directive("hyper_util=error".parse()?)
+            .add_directive("sqlx::query=error".parse()?),
+    );
 
     let otel_metrics = MetricsLayer::new(meter_provider);
 

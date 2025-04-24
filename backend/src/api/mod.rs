@@ -83,15 +83,15 @@ impl App {
         Ok(App { router })
     }
 
-    pub async fn serve(self, listener: tokio::net::TcpListener) -> Result<()> {
+    pub async fn serve(&self, listener: tokio::net::TcpListener) -> Result<()> {
         let addr = listener.local_addr()?;
         tracing::info!("Serving on {}:{}", addr.ip(), addr.port());
-        axum::serve(listener, self.router).await?;
+        axum::serve(listener, self.router.clone()).await?;
         Ok(())
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct AppBuilder {
     postgres_db: Option<PgPool>,
     kafka: Option<String>,
@@ -110,27 +110,43 @@ impl AppBuilder {
         self
     }
 
-    pub fn build(self) -> Result<App> {
-        let irs: Box<dyn IngredientRepository> = if let Some(postgres_db) = self.postgres_db.clone()
-        {
+    fn get_ingredient_recipe_repository(&self) -> Box<dyn IngredientRepository> {
+        if let Some(postgres_db) = &self.postgres_db {
+            tracing::info!("Using Postgres for ingredients database");
             Box::new(PostgresIngredientRepository::new(postgres_db.clone()))
         } else {
+            tracing::warn!("You are using a debug service, please move to something that is actually working.");
             Box::new(InMemoryIngredientRepository::new())
-        };
+        }
+    }
 
-        let rrs: Box<dyn RecipeRepository> = if let Some(postgres_db) = self.postgres_db.clone() {
+    fn get_recipe_repository(&self) -> Box<dyn RecipeRepository> {
+        if let Some(postgres_db) = &self.postgres_db {
+            tracing::info!("Using Postgres for recipe database");
             Box::new(PostgresRecipeRepository::new(postgres_db.clone()))
         } else {
+            tracing::warn!("You are using a debug service, please move to something that is actually working.");
             Box::new(InMemoryRecipeRepository::new())
-        };
+        }
+    }
 
-        let ms: Box<dyn MessageService> = if let Some(kafka_url) = self.kafka {
-            Box::new(KafkaMessageService::new(&kafka_url)?)
+    fn get_message_service(&self) -> eyre::Result<Box<dyn MessageService>> {
+        if let Some(kafka_url) = &self.kafka {
+            tracing::info!("Using Kafka messaging service");
+            Ok(Box::new(KafkaMessageService::new(kafka_url)?))
         } else {
-            Box::new(StubMessageService)
-        };
+            tracing::info!("Using a stub messaging service");
+            tracing::warn!("You are using a debug service, please move to something that is actually working.");
+            Ok(Box::new(StubMessageService))
+        }
+    }
 
-        App::new(Arc::new(irs), Arc::new(rrs), Arc::new(ms))
+    pub fn build(self) -> Result<App> {
+        let irs = Arc::new(self.get_ingredient_recipe_repository());
+        let rrs = Arc::new(self.get_recipe_repository());
+        let ms = Arc::new(self.get_message_service()?);
+
+        App::new(irs, rrs, ms)
     }
 
     pub fn new() -> Self {

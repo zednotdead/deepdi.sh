@@ -34,6 +34,7 @@ pub async fn get_all_ingredients_route(
         ..
     }): State<AppState>,
 ) -> Result<Json<Vec<IngredientDTO>>, GetAllIngredientsError> {
+    tracing::info!("Getting all ingredients");
     let result = get_all_ingredients(ingredient_repository).await?;
 
     Ok(Json(result.iter().map(IngredientDTO::from).collect()))

@@ -18,6 +18,7 @@ pub enum Environment {
 }
 
 impl From<Environment> for Profile {
+    #[coverage(off)]
     fn from(val: Environment) -> Self {
         Profile::new(&val.to_string())
     }
@@ -26,6 +27,7 @@ impl From<Environment> for Profile {
 impl TryFrom<String> for Environment {
     type Error = String;
 
+    #[coverage(off)]
     fn try_from(value: String) -> Result<Self, Self::Error> {
         match value.to_lowercase().as_str() {
             "dev" => Ok(Self::Development),
@@ -40,7 +42,7 @@ impl TryFrom<String> for Environment {
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct Settings {
-    pub database: DatabaseSettings,
+    pub database: Option<DatabaseSettings>,
     pub application: ApplicationSettings,
     pub session: SessionSettings,
 }
@@ -77,6 +79,7 @@ pub struct SessionSettings {
 }
 
 impl Settings {
+    #[coverage(off)]
     pub fn get() -> color_eyre::Result<Self> {
         let environment: Environment = std::env::var("APP_ENV")
             .unwrap_or_else(|_| "dev".into())
@@ -97,10 +100,12 @@ impl Settings {
 }
 
 impl DatabaseSettings {
+    #[coverage(off)]
     pub fn with_db(&self) -> PgConnectOptions {
         self.without_db().database(&self.database_name)
     }
 
+    #[coverage(off)]
     pub fn without_db(&self) -> PgConnectOptions {
         let mode = if self.require_ssl {
             PgSslMode::Require
@@ -117,6 +122,7 @@ impl DatabaseSettings {
 }
 
 impl SessionSettings {
+    #[coverage(off)]
     pub fn get_redis_connection_string(&self) -> String {
         let connection_prefix = if self.ssl { "rediss://" } else { "redis://" };
 

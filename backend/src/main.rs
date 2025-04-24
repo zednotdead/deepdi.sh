@@ -1,5 +1,3 @@
-#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
-
 use backend::{api::AppBuilder, configuration::Settings, tracing::init_tracing};
 use color_eyre::Result;
 
@@ -14,11 +12,14 @@ async fn main() -> Result<()> {
 
     let config = Settings::get().unwrap();
 
-    let db = PgPool::connect_lazy_with(config.database.with_db());
-    let app = AppBuilder::new()
-        .with_postgres_database(db)
-        .with_kafka("localhost:9092")
-        .build()?;
+    let mut app_builder = AppBuilder::new();
+
+    if let Some(db) = config.database {
+        app_builder = app_builder.with_postgres_database(PgPool::connect_lazy_with(db.with_db()));
+    };
+
+    let app = app_builder.with_kafka("localhost:9092").build()?;
+
     let listener = config.application.get_listener().await?;
     app.serve(listener).await?;
 

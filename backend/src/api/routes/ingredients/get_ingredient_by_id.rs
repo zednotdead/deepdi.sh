@@ -36,7 +36,6 @@ pub async fn get_ingredient_by_id_route(
         ..
     }): State<AppState>,
 ) -> Result<Json<IngredientDTO>, GetIngredientError> {
-    // TODO: Switch to storing the amount of recipes with certain ingredient in some sort of cache
     let result = get_ingredient_by_id(ingredient_repository, &ingredient_id).await?;
 
     Ok(Json(result.into()))
