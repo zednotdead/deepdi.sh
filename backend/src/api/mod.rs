@@ -85,7 +85,7 @@ impl App {
 
     pub async fn serve(&self, listener: tokio::net::TcpListener) -> Result<()> {
         let addr = listener.local_addr()?;
-        tracing::info!("Serving on {}:{}", addr.ip(), addr.port());
+        log::info!("Serving on {}:{}", addr.ip(), addr.port());
         axum::serve(listener, self.router.clone()).await?;
         Ok(())
     }

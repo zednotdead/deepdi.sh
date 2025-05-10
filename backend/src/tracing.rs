@@ -12,10 +12,12 @@ use tracing_opentelemetry::MetricsLayer;
 use tracing_subscriber::{layer::SubscriberExt, Registry};
 use tracing_subscriber::{EnvFilter, Layer};
 
+const APP_NAME: &str = "@deepdish/backend";
+
 #[coverage(off)]
 fn resource() -> Resource {
     Resource::builder()
-        .with_service_name("deepdi.sh-backend")
+        .with_service_name(APP_NAME)
         .build()
 }
 
@@ -68,6 +70,19 @@ fn init_logger_provider() -> Result<SdkLoggerProvider> {
     Ok(log_provider)
 }
 
+pub fn filter() -> Result<EnvFilter> {
+    Ok(EnvFilter::builder()
+        .with_default_directive(LevelFilter::DEBUG.into())
+        .from_env()?
+        .add_directive("h2=info".parse()?)
+        .add_directive("tonic=error".parse()?)
+        .add_directive("tower=error".parse()?)
+        .add_directive("opentelemetry_sdk=error".parse()?)
+        .add_directive("opentelemetry-otlp=error".parse()?)
+        .add_directive("hyper_util=error".parse()?)
+        .add_directive("sqlx::query=debug".parse()?))
+}
+
 #[coverage(off)]
 pub fn init_tracing() -> Result<()> {
     let propagator = TextMapCompositePropagator::new(vec![
@@ -81,30 +96,20 @@ pub fn init_tracing() -> Result<()> {
     let tracer_provider = init_tracer_provider()?;
     let logger_provider = init_logger_provider()?;
 
-    let tracer = tracer_provider.tracer("deepdi.sh-backend");
+    let tracer = tracer_provider.tracer(APP_NAME);
 
     let otel_traces = tracing_opentelemetry::layer()
         .with_tracer(tracer)
         .with_error_records_to_exceptions(true);
 
-    let otel_log = OpenTelemetryTracingBridge::new(&logger_provider).with_filter(
-        EnvFilter::builder()
-            .with_default_directive(LevelFilter::DEBUG.into())
-            .with_env_var(EnvFilter::DEFAULT_ENV)
-            .parse("")?
-            .add_directive("h2=info".parse()?)
-            .add_directive("tonic=error".parse()?)
-            .add_directive("tower=error".parse()?)
-            .add_directive("opentelemetry_sdk=error".parse()?)
-            .add_directive("opentelemetry-otlp=error".parse()?)
-            .add_directive("hyper_util=error".parse()?)
-            .add_directive("sqlx::query=error".parse()?),
-    );
+    let otel_log = OpenTelemetryTracingBridge::new(&logger_provider).with_filter(filter()?);
+    let stdout_log = tracing_subscriber::fmt::layer().json().with_filter(filter()?);
 
     let otel_metrics = MetricsLayer::new(meter_provider);
 
     let subscriber = Registry::default()
         .with(otel_log)
+        .with(stdout_log)
         .with(otel_traces)
         .with(otel_metrics);
 

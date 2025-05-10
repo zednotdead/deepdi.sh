@@ -1,10 +1,13 @@
 procs:
   backend:
-    cmd: ["task", "be:dev"]
+    shell: task be:dev
     stop: "SIGKILL"
   frontend:
-    cmd: ["task", "fe:dev"]
+    shell: task fe:dev
     stop: "SIGKILL"
+  auth:
+    shell: bun dev
+    cwd: "auth"
   # caddy:
   #   cmd: ["task", "proxy"]
   #   stop: "SIGKILL"

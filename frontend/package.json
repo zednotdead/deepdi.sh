@@ -1,5 +1,5 @@
 {
-  "name": "frontend",
+  "name": "@deepdish/frontend",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,6 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@deepdish/auth": "link:@deepdish/auth",
+    "@deepdish/common": "link:@deepdish/common",
+    "@elysiajs/eden": "^1.2.0",
     "@opentelemetry/api-logs": "^0.200.0",
     "@opentelemetry/exporter-trace-otlp-proto": "^0.200.0",
     "@opentelemetry/instrumentation": "^0.200.0",
@@ -19,15 +22,17 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/bun": "^1.2.11",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
+    "elysia": "^1.2.25",
     "eslint": "^9",
     "eslint-config-next": "15.2.5",
-    "@eslint/eslintrc": "^3"
+    "tailwindcss": "^4",
+    "typescript": "^5"
   },
   "trustedDependencies": [
     "protobufjs"

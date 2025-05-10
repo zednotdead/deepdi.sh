@@ -1,8 +1,8 @@
 {
-  "name": "common",
+  "name": "@deepdish/common",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
       "build": "cargo test && tsc"
   },
