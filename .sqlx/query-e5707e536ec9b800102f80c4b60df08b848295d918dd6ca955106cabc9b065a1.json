@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT\nr.id,\nr.name,\nr.description,\nr.steps,\nr.time,\nr.servings,\nr.created_at,\nr.updated_at\nFROM recipes AS r\nJOIN ingredients_recipes AS ir ON r.id = ir.recipe_id\nJOIN ingredients AS i ON ir.ingredient_id = i.id\nWHERE r.id = $1\n\n",
+  "query": "SELECT\nr.id,\nr.name,\nr.description,\nr.steps,\nr.time,\nr.servings,\nr.created_at,\nr.updated_at\nFROM recipes AS r\nWHERE r.id = $1\n\n",
   "describe": {
     "columns": [
       {
@@ -60,5 +60,5 @@
       false
     ]
   },
-  "hash": "a98c0f180edaf17b84c75a3ff101c7b23f071503e58d404cd12771d90a664101"
+  "hash": "e5707e536ec9b800102f80c4b60df08b848295d918dd6ca955106cabc9b065a1"
 }
