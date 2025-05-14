@@ -1,0 +1,62 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\nr.id,\nr.name,\nr.description,\nr.steps,\nr.time,\nr.servings,\nr.created_at,\nr.updated_at\nFROM recipes AS r\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "steps",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 4,
+        "name": "time",
+        "type_info": "Json"
+      },
+      {
+        "ordinal": 5,
+        "name": "servings",
+        "type_info": "Json"
+      },
+      {
+        "ordinal": 6,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 7,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "412ef566a1da2bb1ec1268e2b8609a8d5696510ca1bacf054e44992ff3c84d69"
+}

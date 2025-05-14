@@ -7,7 +7,7 @@ use crate::domain::entities::{
     recipe::{IngredientUnit, IngredientWithAmount, Recipe, RecipeChangeset},
 };
 use async_trait::async_trait;
-use errors::AddIngredientIntoRecipeError;
+use errors::{AddIngredientIntoRecipeError, GetAllRecipesError};
 use std::sync::Arc;
 use uuid::Uuid;
 
@@ -22,6 +22,7 @@ pub trait RecipeRepository: Send + Sync + 'static {
     async fn insert(&self, input: Recipe) -> Result<(), InsertRecipeError>;
 
     async fn get_by_id(&self, id: &Uuid) -> Result<Recipe, GetRecipeByIdError>;
+    async fn get_all(&self) -> Result<Vec<Recipe>, GetAllRecipesError>;
 
     async fn delete(&self, recipe: &Recipe) -> Result<(), DeleteRecipeError>;
 

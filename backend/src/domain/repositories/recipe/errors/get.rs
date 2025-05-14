@@ -44,3 +44,30 @@ impl From<serde_json::Error> for GetRecipeByIdError {
         Self::UnknownError(e.into())
     }
 }
+
+#[derive(Error, Debug)]
+pub enum GetAllRecipesError {
+    #[error(transparent)]
+    ValidationError(#[from] ValidationError),
+
+    #[error(transparent)]
+    UnknownError(#[from] eyre::Error),
+}
+
+impl<T> From<PoisonError<T>> for GetAllRecipesError {
+    fn from(_value: PoisonError<T>) -> Self {
+        eyre!("Recipe repository lock was poisoned during a previous access and can no longer be locked").into()
+    }
+}
+
+impl From<SQLXError> for GetAllRecipesError {
+    fn from(e: SQLXError) -> Self {
+        Self::UnknownError(e.into())
+    }
+}
+
+impl From<serde_json::Error> for GetAllRecipesError {
+    fn from(e: serde_json::Error) -> Self {
+        Self::UnknownError(e.into())
+    }
+}

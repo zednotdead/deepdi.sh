@@ -1,7 +1,8 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use futures::future::join_all;
+use futures::future::{join_all, try_join_all};
+use rayon::iter::{IntoParallelIterator, IntoParallelRefIterator, ParallelIterator};
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -12,7 +13,7 @@ use crate::domain::entities::recipe::{
 
 use super::errors::{
     AddIngredientIntoRecipeError, DeleteIngredientFromRecipeError, DeleteRecipeError,
-    UpdateIngredientInRecipeError, UpdateRecipeError,
+    GetAllRecipesError, UpdateIngredientInRecipeError, UpdateRecipeError,
 };
 use super::RecipeRepositoryService;
 use super::{
@@ -53,6 +54,10 @@ async fn update_timestamps_in_recipe(pool: &PgPool, id: Uuid) {
 
 #[async_trait]
 impl RecipeRepository for PostgresRecipeRepository {
+    #[tracing::instrument(
+        "[RECIPE REPOSITORY] [POSTGRES] Insert new recipe",
+        skip(self)
+    )]
     async fn insert(&self, input: Recipe) -> Result<(), InsertRecipeError> {
         let time = serde_json::to_value(&input.time)
             .map_err(|e| InsertRecipeError::UnknownError(e.into()))?;
@@ -91,6 +96,10 @@ impl RecipeRepository for PostgresRecipeRepository {
         Ok(())
     }
 
+    #[tracing::instrument(
+        "[RECIPE REPOSITORY] [POSTGRES] Get recipe by ID",
+        skip(self)
+    )]
     async fn get_by_id(&self, id: &Uuid) -> Result<Recipe, GetRecipeByIdError> {
         let result = sqlx::query_file!("queries/recipes/get_recipe.sql", id)
             .fetch_one(&self.0)
@@ -130,6 +139,61 @@ impl RecipeRepository for PostgresRecipeRepository {
         Ok(recipe)
     }
 
+    #[tracing::instrument(
+        "[RECIPE REPOSITORY] [POSTGRES] Get all recipes",
+        skip(self)
+    )]
+    async fn get_all(&self) -> Result<Vec<Recipe>, GetAllRecipesError> {
+        let result = sqlx::query_file!("queries/recipes/get_all_recipes.sql")
+            .fetch_all(&self.0)
+            .await
+            .map_err(|e| GetAllRecipesError::UnknownError(e.into()))?;
+
+        let recipes_ft: Vec<_> = result
+            .into_par_iter()
+            .map(async |recipe| {
+                let result_ingredients = sqlx::query_file_as!(
+                    IngredientWithAmountModel,
+                    "queries/recipes/get_ingredients_for_recipe.sql",
+                    recipe.id
+                )
+                .fetch_all(&self.0)
+                .await?;
+
+                let ingredients = result_ingredients
+                    .iter()
+                    .map(IngredientWithAmount::try_from)
+                    .collect::<Result<Vec<_>, _>>()?;
+
+                let time = serde_json::from_value(recipe.time)?;
+
+                let servings = serde_json::from_value(recipe.servings)?;
+
+                let recipe = Recipe {
+                    id: recipe.id,
+                    name: recipe.name,
+                    description: recipe.description,
+                    steps: recipe.steps.try_into()?,
+                    time,
+                    servings,
+                    ingredients: ingredients.try_into()?,
+                    created_at: recipe.created_at,
+                    updated_at: recipe.updated_at,
+                };
+
+                Ok::<Recipe, GetAllRecipesError>(recipe)
+            })
+            .collect();
+
+        let recipes = try_join_all(recipes_ft).await?;
+
+        Ok(recipes)
+    }
+
+    #[tracing::instrument(
+        "[RECIPE REPOSITORY] [POSTGRES] Delete recipe",
+        skip(self)
+    )]
     async fn delete(&self, recipe: &Recipe) -> Result<(), DeleteRecipeError> {
         let tx = self.0.begin().await?;
 

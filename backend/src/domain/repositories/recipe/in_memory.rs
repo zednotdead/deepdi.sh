@@ -19,8 +19,7 @@ use crate::domain::{
 
 use super::{
     errors::{
-        AddIngredientIntoRecipeError, DeleteIngredientFromRecipeError, DeleteRecipeError,
-        GetRecipeByIdError, UpdateIngredientInRecipeError, UpdateRecipeError,
+        AddIngredientIntoRecipeError, DeleteIngredientFromRecipeError, DeleteRecipeError, GetAllRecipesError, GetRecipeByIdError, UpdateIngredientInRecipeError, UpdateRecipeError
     },
     RecipeRepository, RecipeRepositoryService,
 };
@@ -49,6 +48,17 @@ impl RecipeRepository for InMemoryRecipeRepository {
             .get(id)
             .cloned()
             .ok_or_else(|| GetRecipeByIdError::NotFound(*id))?;
+
+        Ok(result)
+    }
+
+    async fn get_all(&self) -> Result<Vec<Recipe>, GetAllRecipesError> {
+        let lock = self.0.lock()?;
+
+        let result = lock
+            .values()
+            .cloned()
+            .collect::<Vec<_>>();
 
         Ok(result)
     }
