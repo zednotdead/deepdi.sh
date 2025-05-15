@@ -205,6 +205,7 @@ impl From<IngredientWithAmount> for IngredientWithAmountDTO {
 
 #[derive(FromRow, PartialEq, Debug, Clone)]
 pub struct IngredientWithAmountModel {
+    pub recipe_id: Uuid,
     pub ingredient: IngredientModel,
     pub amount: serde_json::Value,
     pub notes: Option<String>,
@@ -285,7 +286,7 @@ impl IngredientUnit {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct RecipeChangeset {
     pub name: Option<String>,
     pub description: Option<String>,

@@ -12,4 +12,4 @@ ir.optional,
 FROM ingredients_recipes AS ir
 JOIN ingredients AS i
     ON i.id = ir.ingredient_id
-WHERE ir.recipe_id = $1
+WHERE ir.recipe_id = ANY($1)

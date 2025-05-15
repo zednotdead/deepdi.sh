@@ -1,8 +1,11 @@
+use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use eyre::eyre;
 use futures::future::{join_all, try_join_all};
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
+use itertools::Itertools;
+use rayon::iter::{IntoParallelIterator, ParallelBridge, ParallelIterator};
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -54,10 +57,7 @@ async fn update_timestamps_in_recipe(pool: &PgPool, id: Uuid) {
 
 #[async_trait]
 impl RecipeRepository for PostgresRecipeRepository {
-    #[tracing::instrument(
-        "[RECIPE REPOSITORY] [POSTGRES] Insert new recipe",
-        skip(self)
-    )]
+    #[tracing::instrument("[RECIPE REPOSITORY] [POSTGRES] Insert new recipe", skip(self))]
     async fn insert(&self, input: Recipe) -> Result<(), InsertRecipeError> {
         let time = serde_json::to_value(&input.time)
             .map_err(|e| InsertRecipeError::UnknownError(e.into()))?;
@@ -96,10 +96,7 @@ impl RecipeRepository for PostgresRecipeRepository {
         Ok(())
     }
 
-    #[tracing::instrument(
-        "[RECIPE REPOSITORY] [POSTGRES] Get recipe by ID",
-        skip(self)
-    )]
+    #[tracing::instrument("[RECIPE REPOSITORY] [POSTGRES] Get recipe by ID", skip(self))]
     async fn get_by_id(&self, id: &Uuid) -> Result<Recipe, GetRecipeByIdError> {
         let result = sqlx::query_file!("queries/recipes/get_recipe.sql", id)
             .fetch_one(&self.0)
@@ -139,28 +136,41 @@ impl RecipeRepository for PostgresRecipeRepository {
         Ok(recipe)
     }
 
-    #[tracing::instrument(
-        "[RECIPE REPOSITORY] [POSTGRES] Get all recipes",
-        skip(self)
-    )]
+    #[tracing::instrument("[RECIPE REPOSITORY] [POSTGRES] Get all recipes", skip(self))]
     async fn get_all(&self) -> Result<Vec<Recipe>, GetAllRecipesError> {
+        tracing::info!("Fetching all recipes");
         let result = sqlx::query_file!("queries/recipes/get_all_recipes.sql")
             .fetch_all(&self.0)
             .await
             .map_err(|e| GetAllRecipesError::UnknownError(e.into()))?;
 
+        let recipe_ids: Vec<Uuid> = result.iter().map(|recipe| recipe.id).collect();
+
+        tracing::info!("Fetching all ingredients for fetched recipes");
+        let ingredients_for_recipes = sqlx::query_file_as!(
+            IngredientWithAmountModel,
+            "queries/recipes/get_ingredients_for_many_recipes.sql",
+            &recipe_ids
+        )
+        .fetch_all(&self.0)
+        .await
+        .map_err(|e| GetAllRecipesError::UnknownError(e.into()))?;
+
+        let data_grouped = ingredients_for_recipes
+            .into_iter()
+            .chunk_by(|elt| elt.recipe_id)
+            .into_iter()
+            .fold(BTreeMap::new(), |mut acc, (key, chunk)| {
+                acc.insert(key, chunk.collect::<Vec<_>>());
+                acc
+            });
+
         let recipes_ft: Vec<_> = result
             .into_par_iter()
             .map(async |recipe| {
-                let result_ingredients = sqlx::query_file_as!(
-                    IngredientWithAmountModel,
-                    "queries/recipes/get_ingredients_for_recipe.sql",
-                    recipe.id
-                )
-                .fetch_all(&self.0)
-                .await?;
-
-                let ingredients = result_ingredients
+                let ingredients = data_grouped
+                    .get(&recipe.id)
+                    .ok_or_else(|| eyre!("could not find recipes for this recipe id"))?
                     .iter()
                     .map(IngredientWithAmount::try_from)
                     .collect::<Result<Vec<_>, _>>()?;
@@ -190,10 +200,7 @@ impl RecipeRepository for PostgresRecipeRepository {
         Ok(recipes)
     }
 
-    #[tracing::instrument(
-        "[RECIPE REPOSITORY] [POSTGRES] Delete recipe",
-        skip(self)
-    )]
+    #[tracing::instrument("[RECIPE REPOSITORY] [POSTGRES] Delete recipe", skip(self))]
     async fn delete(&self, recipe: &Recipe) -> Result<(), DeleteRecipeError> {
         let tx = self.0.begin().await?;
 
@@ -213,6 +220,7 @@ impl RecipeRepository for PostgresRecipeRepository {
         Ok(())
     }
 
+    #[tracing::instrument("[RECIPE REPOSITORY] [POSTGRES] Update recipe", skip(self))]
     async fn update(
         &self,
         recipe: &Recipe,

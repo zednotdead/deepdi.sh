@@ -13,6 +13,7 @@ use super::{IngredientWithAmount, IngredientWithAmountModel};
 #[test]
 fn converting_ingredient_with_amount_works() {
     let input = IngredientWithAmountModel {
+        recipe_id: Uuid::nil(),
         ingredient: IngredientModel {
             id: Uuid::nil(),
             name: "Ingredient name".to_owned(),
@@ -46,6 +47,7 @@ fn converting_ingredient_with_amount_works() {
 #[test]
 fn converting_ingredient_with_custom_amount_unit_works() {
     let input = IngredientWithAmountModel {
+        recipe_id: Uuid::nil(),
         ingredient: IngredientModel {
             id: Uuid::nil(),
             name: "Ingredient name".to_owned(),
@@ -85,6 +87,7 @@ fn converting_ingredient_with_custom_amount_unit_works() {
 #[test]
 fn converting_ingredient_with_custom_amount_unit_but_without_unit_descriptor_fails() {
     let input = IngredientWithAmountModel {
+        recipe_id: Uuid::nil(),
         ingredient: IngredientModel {
             id: Uuid::nil(),
             name: "Ingredient name".to_owned(),
@@ -112,6 +115,7 @@ fn converting_ingredient_with_custom_amount_unit_but_without_unit_descriptor_fai
 #[test]
 fn malformed_ingredient_amount_fails() {
     let input = IngredientWithAmountModel {
+        recipe_id: Uuid::nil(),
         ingredient: IngredientModel {
             id: Uuid::nil(),
             name: "Ingredient name".to_owned(),

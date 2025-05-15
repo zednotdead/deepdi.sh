@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\nir.recipe_id,\nir.amount,\nir.notes,\nir.optional,\n(\n    i.id,\n    i.name,\n    i.description,\n    i.diet_violations\n) as \"ingredient!: IngredientModel\"\nFROM ingredients_recipes AS ir\nJOIN ingredients AS i\n    ON i.id = ir.ingredient_id\nWHERE ir.recipe_id = $1\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "recipe_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "amount",
+        "type_info": "Json"
+      },
+      {
+        "ordinal": 2,
+        "name": "notes",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "optional",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 4,
+        "name": "ingredient!: IngredientModel",
+        "type_info": "Record"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      null
+    ]
+  },
+  "hash": "46fab84fcb97000fd3e9314489480455755826ea49f352c1492a934d29819624"
+}

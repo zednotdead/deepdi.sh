@@ -277,6 +277,7 @@ dependencies = [
  "futures",
  "futures-util",
  "http",
+ "itertools 0.14.0",
  "log",
  "mockall",
  "once_cell",
